@@ -1,0 +1,288 @@
+@inject IdentityServer.Services.MockDataService MockData
+@{
+    ViewData["Title"] = "Admin Dashboard";
+    Layout = "_AdminLayout";
+    var users = MockData.Users;
+    var clients = MockData.Clients;
+    var activeUsers = users.Where(u => u.Status == "Active").Count();
+    var activeSessions = MockData.UserSessions.Count;
+    var failedLogins = MockData.AuditLogs.Where(l => l.EventType == "Failed Login" && l.Timestamp > DateTime.UtcNow.AddHours(-24)).Count();
+}
+
+<div class="space-y-6">
+    <!-- Page header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p class="text-gray-600 mt-1">Welcome back, Admin User</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                </svg>
+                Export Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Total Users -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Users</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@users.Count</p>
+                    <p class="text-sm text-green-600 mt-2">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path>
+                        </svg>
+                        12% from last month
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Active Sessions</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@activeSessions</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        @activeUsers active users
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Clients -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Total Clients</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@clients.Count</p>
+                    <p class="text-sm text-gray-600 mt-2">
+                        @clients.Where(c => c.Enabled).Count() enabled
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Failed Login Attempts (24h) -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Failed Logins (24h)</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@failedLogins</p>
+                    <p class="text-sm text-yellow-600 mt-2">
+                        <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        Requires attention
+                    </p>
+                </div>
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Login Trends -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-lg font-semibold text-gray-900">Login Trends</h2>
+                <select class="text-sm border border-gray-300 rounded-lg px-3 py-1.5">
+                    <option>Last 7 days</option>
+                    <option>Last 30 days</option>
+                    <option>Last 90 days</option>
+                </select>
+            </div>
+            <div class="h-64 flex items-end justify-between gap-2">
+                @for(int i = 0; i < 7; i++)
+                {
+                    var height = new Random().Next(30, 100);
+                    <div class="flex-1 bg-blue-600 rounded-t hover:bg-blue-700 transition-colors cursor-pointer" style="height: @(height)%" title="Day @(i+1): @(height) logins"></div>
+                }
+            </div>
+            <div class="flex justify-between mt-4 text-xs text-gray-600">
+                <span>Mon</span>
+                <span>Tue</span>
+                <span>Wed</span>
+                <span>Thu</span>
+                <span>Fri</span>
+                <span>Sat</span>
+                <span>Sun</span>
+            </div>
+        </div>
+
+        <!-- Users by Role -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6">Users by Role</h2>
+            <div class="space-y-4">
+                @foreach(var role in MockData.Roles.OrderByDescending(r => r.UserCount).Take(6))
+                {
+                    var percentage = (role.UserCount * 100.0 / users.Count);
+                    <div>
+                        <div class="flex items-center justify-between text-sm mb-1">
+                            <span class="font-medium text-gray-700">@role.DisplayName</span>
+                            <span class="text-gray-600">@role.UserCount users</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-2">
+                            <div class="bg-blue-600 h-2 rounded-full" style="width: @(percentage)%"></div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity & System Alerts -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Activity -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+                @foreach(var log in MockData.AuditLogs.Take(5))
+                {
+                    <div class="p-4 hover:bg-gray-50">
+                        <div class="flex items-start gap-3">
+                            <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">@log.EventType</p>
+                                <p class="text-sm text-gray-600 mt-1">@log.Username - @log.Action</p>
+                                <p class="text-xs text-gray-500 mt-1">@log.Timestamp.ToString("MMM dd, yyyy HH:mm") - @log.IpAddress</p>
+                            </div>
+                            <span class="badge @(log.Result == "Success" ? "badge-success" : "badge-danger")">@log.Result</span>
+                        </div>
+                    </div>
+                }
+            </div>
+            <div class="p-4 border-t border-gray-200 text-center">
+                <a href="/Admin/AuditLogs" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View all activity</a>
+            </div>
+        </div>
+
+        <!-- System Alerts -->
+        <div class="bg-white rounded-lg shadow">
+            <div class="p-6 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">System Alerts</h2>
+            </div>
+            <div class="divide-y divide-gray-200">
+                <div class="p-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-yellow-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">Multiple failed login attempts detected</p>
+                            <p class="text-sm text-gray-600 mt-1">User: john.smith@example.com (5 attempts)</p>
+                            <p class="text-xs text-gray-500 mt-1">15 minutes ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">New client application registered</p>
+                            <p class="text-sm text-gray-600 mt-1">Client: Partner Portal v2</p>
+                            <p class="text-xs text-gray-500 mt-1">2 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <div class="flex items-start gap-3">
+                        <svg class="w-5 h-5 text-green-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">System backup completed successfully</p>
+                            <p class="text-sm text-gray-600 mt-1">All data backed up</p>
+                            <p class="text-xs text-gray-500 mt-1">6 hours ago</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="/Admin/Users/Create" class="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Add New User</p>
+                    <p class="text-xs text-gray-600">Create user account</p>
+                </div>
+            </a>
+
+            <a href="/Admin/Clients/Create" class="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Register Client</p>
+                    <p class="text-xs text-gray-600">Add new application</p>
+                </div>
+            </a>
+
+            <a href="/Admin/Roles/Create" class="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Create Role</p>
+                    <p class="text-xs text-gray-600">Define permissions</p>
+                </div>
+            </a>
+
+            <a href="/Admin/AuditLogs" class="flex items-center gap-3 p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">View Audit Logs</p>
+                    <p class="text-xs text-gray-600">Check system activity</p>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>

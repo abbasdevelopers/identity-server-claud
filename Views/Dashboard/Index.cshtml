@@ -1,0 +1,146 @@
+@inject IdentityServer.Services.MockDataService MockData
+@{
+    ViewData["Title"] = "Dashboard";
+    var user = MockData.Users.FirstOrDefault();
+    var userSessions = MockData.UserSessions.Where(s => s.UserId == user?.Id).ToList();
+    var userApiKeys = MockData.ApiKeys.Where(k => k.UserId == user?.Id).ToList();
+}
+
+<div class="space-y-6">
+    <!-- Welcome message -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-8 text-white">
+        <h1 class="text-3xl font-bold">Welcome back, @user?.FullName!</h1>
+        <p class="mt-2 text-blue-100">Here's what's happening with your account</p>
+    </div>
+
+    <!-- Stats cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Active Sessions</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@userSessions.Count</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-4">@userSessions.Count(s => s.IsTrusted) trusted devices</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">API Keys</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">@userApiKeys.Count</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-4">@userApiKeys.Count(k => k.Status == "Active") active</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Security Score</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">85%</p>
+                </div>
+                <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-4">@(user?.TwoFactorEnabled == true ? "2FA enabled" : "Enable 2FA")</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Last Login</p>
+                    <p class="text-lg font-bold text-gray-900 mt-2">@user?.LastLogin?.ToString("MMM dd, yyyy")</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <p class="text-xs text-gray-600 mt-4">@user?.LastLoginLocation</p>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/Users/Profile" class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Update Profile</p>
+                    <p class="text-xs text-gray-600">Edit your information</p>
+                </div>
+            </a>
+
+            <a href="/Account/Security" class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Enable MFA</p>
+                    <p class="text-xs text-gray-600">Secure your account</p>
+                </div>
+            </a>
+
+            <a href="/ApiKeys" class="flex items-center gap-3 p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors">
+                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="font-medium text-gray-900">Generate API Key</p>
+                    <p class="text-xs text-gray-600">Create new key</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Recent Activity</h2>
+        </div>
+        <div class="divide-y divide-gray-200">
+            @foreach(var log in MockData.AuditLogs.Where(l => l.UserId == user?.Id).Take(5))
+            {
+                <div class="p-4 hover:bg-gray-50">
+                    <div class="flex items-start gap-3">
+                        <div class="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
+                        <div class="flex-1">
+                            <p class="text-sm font-medium text-gray-900">@log.EventType</p>
+                            <p class="text-sm text-gray-600 mt-1">@log.Details</p>
+                            <p class="text-xs text-gray-500 mt-1">@log.Timestamp.ToString("MMM dd, yyyy HH:mm") from @log.IpAddress</p>
+                        </div>
+                        <span class="badge @(log.Result == "Success" ? "badge-success" : "badge-danger")">@log.Result</span>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="p-4 border-t border-gray-200 text-center">
+            <a href="/Activity" class="text-sm text-blue-600 hover:text-blue-700 font-medium">View all activity</a>
+        </div>
+    </div>
+</div>
