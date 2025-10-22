@@ -1,0 +1,216 @@
+@inject IdentityServer.Services.MockDataService MockData
+@{
+    ViewData["Title"] = "API Keys";
+    var user = MockData.Users.FirstOrDefault();
+    var userApiKeys = MockData.ApiKeys.Where(k => k.UserId == user?.Id).ToList();
+}
+
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">API Keys</h1>
+            <p class="text-gray-600 mt-1">Manage your API keys for programmatic access</p>
+        </div>
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium" data-modal-trigger="create-api-key-modal">
+            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+            </svg>
+            Generate New Key
+        </button>
+    </div>
+
+    <!-- API Keys List -->
+    @if(userApiKeys.Any())
+    {
+        <div class="grid grid-cols-1 gap-4">
+            @foreach(var apiKey in userApiKeys)
+            {
+                <div class="bg-white border border-gray-200 rounded-lg p-6">
+                    <div class="flex items-start justify-between">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <h3 class="text-lg font-semibold text-gray-900">@apiKey.Name</h3>
+                                @if(apiKey.Status == "Active")
+                                {
+                                    <span class="badge badge-success">Active</span>
+                                }
+                                else if(apiKey.Status == "Expired")
+                                {
+                                    <span class="badge badge-warning">Expired</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-danger">Revoked</span>
+                                }
+                            </div>
+                            <p class="text-sm text-gray-600 mb-3">@apiKey.Description</p>
+
+                            <!-- API Key display -->
+                            <div class="bg-gray-50 rounded-lg p-3 mb-3">
+                                <div class="flex items-center justify-between">
+                                    <code class="text-sm font-mono text-gray-900">@apiKey.PartialKey</code>
+                                    <button class="text-sm text-blue-600 hover:text-blue-700 font-medium" data-copy="@apiKey.Key">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                                        </svg>
+                                        Copy
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Scopes -->
+                            <div class="mb-3">
+                                <p class="text-xs font-medium text-gray-700 mb-1">Scopes:</p>
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach(var scope in apiKey.Scopes)
+                                    {
+                                        <span class="badge badge-neutral">@scope</span>
+                                    }
+                                </div>
+                            </div>
+
+                            <!-- Metadata -->
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs text-gray-600">
+                                <div>
+                                    <p class="font-medium text-gray-700">Created</p>
+                                    <p>@apiKey.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                                @if(apiKey.ExpiresAt.HasValue)
+                                {
+                                    <div>
+                                        <p class="font-medium text-gray-700">Expires</p>
+                                        <p>@apiKey.ExpiresAt.Value.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                }
+                                @if(apiKey.LastUsed.HasValue)
+                                {
+                                    <div>
+                                        <p class="font-medium text-gray-700">Last Used</p>
+                                        <p>@apiKey.LastUsed.Value.ToString("MMM dd, yyyy")</p>
+                                    </div>
+                                }
+                                <div>
+                                    <p class="font-medium text-gray-700">Requests</p>
+                                    <p>@apiKey.RequestCount.ToString("N0")</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="ml-4">
+                            <div class="relative">
+                                <button class="p-2 text-gray-400 hover:text-gray-600" data-dropdown-trigger="apikey-actions-@apiKey.Id">
+                                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z"></path>
+                                    </svg>
+                                </button>
+                                <div id="apikey-actions-@apiKey.Id" data-dropdown class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-10">
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">View Details</a>
+                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">Edit Scopes</a>
+                                    @if(apiKey.Status == "Active")
+                                    {
+                                        <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50" data-confirm="Revoke this API key?">Revoke</a>
+                                    }
+                                    <a href="#" class="block px-4 py-2 text-sm text-red-600 hover:bg-red-50" data-confirm="Delete this API key?">Delete</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <!-- Empty state -->
+        <div class="bg-white rounded-lg shadow p-12 text-center">
+            <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">No API Keys Yet</h3>
+            <p class="text-gray-600 mb-6">Create your first API key to start accessing the API programmatically</p>
+            <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium" data-modal-trigger="create-api-key-modal">
+                Generate Your First API Key
+            </button>
+        </div>
+    }
+
+    <!-- Info box -->
+    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <div>
+                <p class="text-sm font-medium text-blue-900">Keep your API keys secure</p>
+                <p class="text-sm text-blue-800 mt-1">Treat your API keys like passwords. Never share them or commit them to version control. Revoke any keys that may have been compromised.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create API Key Modal -->
+<div id="create-api-key-modal" data-modal class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-lg max-w-lg w-full p-6" onclick="event.stopPropagation()">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-semibold text-gray-900">Generate New API Key</h2>
+            <button data-modal-close class="text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+        <form class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Key Name</label>
+                <input type="text" placeholder="e.g., Production API Key" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                <textarea rows="2" placeholder="What will this key be used for?" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Expiration</label>
+                <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <option value="never">Never</option>
+                    <option value="30">30 days</option>
+                    <option value="90">90 days</option>
+                    <option value="365">1 year</option>
+                    <option value="custom">Custom date</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Scopes</label>
+                <div class="space-y-2 max-h-40 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">openid</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" checked class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">profile</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">email</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">api1.read</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="ml-2 text-sm text-gray-700">api1.write</span>
+                    </label>
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 pt-4">
+                <button type="button" data-modal-close class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Cancel</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">Generate Key</button>
+            </div>
+        </form>
+    </div>
+</div>

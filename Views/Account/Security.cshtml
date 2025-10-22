@@ -1,0 +1,296 @@
+@inject IdentityServer.Services.MockDataService MockData
+@{
+    ViewData["Title"] = "Security Settings";
+    var user = MockData.Users.FirstOrDefault();
+    var userSessions = MockData.UserSessions.Where(s => s.UserId == user?.Id).ToList();
+}
+
+<div class="max-w-7xl mx-auto space-y-6">
+    <!-- Page Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Security Settings</h1>
+            <p class="text-gray-600 mt-1">Manage your account security and authentication methods</p>
+        </div>
+    </div>
+
+    <!-- Security Score Card -->
+    <div class="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-8 text-white">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="text-2xl font-bold mb-2">Security Score</h2>
+                <p class="text-blue-100">Your account security is strong</p>
+            </div>
+            <div class="relative w-32 h-32">
+                <svg class="transform -rotate-90 w-32 h-32">
+                    <circle cx="64" cy="64" r="56" stroke="rgba(255,255,255,0.3)" stroke-width="8" fill="none" />
+                    <circle cx="64" cy="64" r="56" stroke="white" stroke-width="8" fill="none" stroke-dasharray="351.68" stroke-dashoffset="52.75" stroke-linecap="round" />
+                </svg>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <span class="text-4xl font-bold">85%</span>
+                </div>
+            </div>
+        </div>
+        <div class="grid grid-cols-3 gap-4 mt-6">
+            <div>
+                <p class="text-blue-100 text-sm">Email Verified</p>
+                <p class="font-semibold">@(user?.EmailConfirmed == true ? "✓ Yes" : "✗ No")</p>
+            </div>
+            <div>
+                <p class="text-blue-100 text-sm">2FA Enabled</p>
+                <p class="font-semibold">@(user?.TwoFactorEnabled == true ? "✓ Yes" : "✗ No")</p>
+            </div>
+            <div>
+                <p class="text-blue-100 text-sm">Strong Password</p>
+                <p class="font-semibold">✓ Yes</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Sessions -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-900">Active Sessions</h2>
+                <p class="text-sm text-gray-600 mt-1">Devices where you're currently logged in</p>
+            </div>
+            <button class="text-sm text-red-600 hover:text-red-700 font-medium" data-confirm="Are you sure you want to revoke all other sessions?">
+                Revoke All Other Sessions
+            </button>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Device</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Browser</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">IP Address</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Last Active</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @foreach(var session in userSessions.Take(5))
+                    {
+                        <tr class="@(session.IsCurrent ? "bg-blue-50" : "")">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span class="text-sm text-gray-900">@session.Device</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@session.Browser</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">@session.Location</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600">@session.IpAddress</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                                @session.LastActive.ToString("MMM dd, yyyy HH:mm")
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm">
+                                @if(session.IsCurrent)
+                                {
+                                    <span class="badge badge-success">Current</span>
+                                }
+                                else
+                                {
+                                    <button class="text-red-600 hover:text-red-700 font-medium" data-confirm="Revoke this session?">Revoke</button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Two-Factor Authentication -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Two-Factor Authentication</h2>
+                    <p class="text-sm text-gray-600 mt-1">Add an extra layer of security to your account</p>
+                </div>
+                @if(user?.TwoFactorEnabled == true)
+                {
+                    <span class="badge badge-success text-base">Enabled</span>
+                }
+                else
+                {
+                    <span class="badge badge-warning text-base">Disabled</span>
+                }
+            </div>
+        </div>
+        <div class="p-6">
+            @if(user?.TwoFactorEnabled == true)
+            {
+                <div class="space-y-4 mb-6">
+                    <h3 class="font-medium text-gray-900">Configured Methods</h3>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Authenticator App</p>
+                                    <p class="text-sm text-gray-600">Google Authenticator, Authy, etc.</p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="badge badge-info">Primary</span>
+                                <button class="text-sm text-red-600 hover:text-red-700 font-medium">Remove</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">SMS</p>
+                                    <p class="text-sm text-gray-600">+1 (***) ***-@(user?.PhoneNumber?.Substring(user.PhoneNumber.Length - 4) ?? "1234")</p>
+                                </div>
+                            </div>
+                            <button class="text-sm text-red-600 hover:text-red-700 font-medium">Remove</button>
+                        </div>
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">Email</p>
+                                    <p class="text-sm text-gray-600">@(user?.Email?.Substring(0, 1))***@("@" + user?.Email?.Split('@')[1])</p>
+                                </div>
+                            </div>
+                            <button class="text-sm text-red-600 hover:text-red-700 font-medium">Remove</button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="w-full py-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-blue-500 hover:text-blue-600 font-medium transition-colors">
+                    + Add Another Method
+                </button>
+            }
+            else
+            {
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">Two-Factor Authentication is Disabled</h3>
+                    <p class="text-gray-600 mb-6">Protect your account by enabling 2FA. We'll ask for a code when you sign in.</p>
+                    <button class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                        Setup Two-Factor Authentication
+                    </button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Trusted Devices -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Trusted Devices</h2>
+            <p class="text-sm text-gray-600 mt-1">Devices where you won't be asked for 2FA codes</p>
+        </div>
+        <div class="p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                @foreach(var session in userSessions.Where(s => s.IsTrusted).Take(4))
+                {
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-start justify-between">
+                            <div class="flex items-start gap-3">
+                                <div class="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                                    <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-900">@session.Device</p>
+                                    <p class="text-sm text-gray-600">@session.Browser</p>
+                                    <p class="text-xs text-gray-500 mt-1">@session.Location</p>
+                                    <p class="text-xs text-gray-500">Added @session.CreatedAt.ToString("MMM dd, yyyy")</p>
+                                </div>
+                            </div>
+                            <button class="text-sm text-red-600 hover:text-red-700 font-medium">Revoke</button>
+                        </div>
+                    </div>
+                }
+                @if(!userSessions.Any(s => s.IsTrusted))
+                {
+                    <div class="col-span-2 text-center py-8 text-gray-500">
+                        <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <p class="text-sm">No trusted devices yet</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Activity -->
+    <div class="bg-white rounded-lg shadow">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900">Login Activity</h2>
+                    <p class="text-sm text-gray-600 mt-1">Recent login attempts and activity</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <select class="text-sm border border-gray-300 rounded-lg px-3 py-1.5">
+                        <option>Last 7 days</option>
+                        <option>Last 30 days</option>
+                        <option>Last 90 days</option>
+                        <option>All time</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="divide-y divide-gray-200">
+            @foreach(var log in MockData.AuditLogs.Where(l => l.UserId == user?.Id && (l.EventType == "User Login" || l.EventType == "Failed Login")).Take(10))
+            {
+                <div class="p-4 hover:bg-gray-50">
+                    <div class="flex items-start justify-between">
+                        <div class="flex items-start gap-3">
+                            @if(log.Result == "Success")
+                            {
+                                <div class="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+                            }
+                            else
+                            {
+                                <div class="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                            }
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">@log.EventType</p>
+                                <p class="text-sm text-gray-600 mt-1">
+                                    @log.IpAddress • @log.Timestamp.ToString("MMM dd, yyyy HH:mm")
+                                </p>
+                            </div>
+                        </div>
+                        <span class="badge @(log.Result == "Success" ? "badge-success" : "badge-danger")">@log.Result</span>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
