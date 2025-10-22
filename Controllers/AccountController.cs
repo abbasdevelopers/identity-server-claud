@@ -111,4 +111,16 @@ public class AccountController : Controller
         // Mock logout
         return RedirectToAction("Login");
     }
+
+    [HttpGet]
+    public IActionResult Security()
+    {
+        return View();
+    }
+
+    [HttpGet]
+    public IActionResult Connections()
+    {
+        return View();
+    }
 }
